@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "compile": "tsc",
-    "start": "node app.js",
+    "start": "npx sequelize-cli db:migrate && node app.js",
     "build": "npm install --omit=dev"
   },
   "keywords": [],

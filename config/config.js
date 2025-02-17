@@ -1,4 +1,8 @@
-module.exports = {
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const config = {
   development: {
     username: process.env.POSTGRES_USER,
     password: process.env.POSTGRES_PASSWORD,
@@ -14,3 +18,5 @@ module.exports = {
     dialect: process.env.DATABASE_DIALECT,
   },
 };
+
+export default config;
