@@ -9,7 +9,7 @@ const sequelize = new Sequelize(
   process.env.POSTGRES_PASSWORD,
   {
     host: process.env.DATABASE_URL,
-    dialect: process.env.PGUSER,
+    dialect: process.env.DATABASE_DIALECT,
   }
 );
 
