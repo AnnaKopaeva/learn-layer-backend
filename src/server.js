@@ -50,6 +50,8 @@ export async function startServer() {
     "/graphql",
     cors({
       credentials: true,
+      methods: "*",
+      allowedHeaders: "*",
       origin: (origin, callback) => {
         if (
           [process.env.DEV_CLIENT_URL, process.env.PROD_CLIENT_URL].includes(
