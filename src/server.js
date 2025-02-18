@@ -41,6 +41,7 @@ export async function startServer() {
     },
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
     cache: "bounded",
+    introspection: process.env.NODE_ENV !== "production",
   });
 
   await server.start();
