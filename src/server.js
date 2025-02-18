@@ -51,7 +51,7 @@ export async function startServer() {
     cors({
       credentials: true,
       methods: "*",
-      allowedHeaders: "*",
+      allowedHeaders: ["Authorization", "Content-Type", "Accept", "Origin"],
       origin: (origin, callback) => {
         if (
           [process.env.DEV_CLIENT_URL, process.env.PROD_CLIENT_URL].includes(
