@@ -48,7 +48,17 @@ export async function startServer() {
 
   app.use(
     "/graphql",
-    cors({ origin: [process.env.DEV_CLIENT_URL, process.env.PROD_CLIENT_URL] }),
+    cors({
+      origin: (origin, callback) => {
+        if (
+          [process.env.DEV_CLIENT_URL, process.env.PROD_CLIENT_URL].includes(
+            origin
+          )
+        ) {
+          callback(null, origin);
+        }
+      },
+    }),
     express.json(),
     expressMiddleware(server)
   );
