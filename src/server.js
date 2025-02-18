@@ -1,9 +1,14 @@
-import { ApolloServer } from "apollo-server";
+import { ApolloServer } from "@apollo/server";
+import { expressMiddleware } from "@apollo/server/express4";
+import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
+import express from "express";
+import http from "http";
 import jwt from "jsonwebtoken";
+import cors from "cors";
+import dotenv from "dotenv";
 import typeDefs from "./schema.js";
 import resolvers from "./resolvers.js";
 import User from "./models/User.js";
-import dotenv from "dotenv";
 
 dotenv.config();
 
@@ -23,7 +28,9 @@ const getUser = async (token) => {
   return null;
 };
 
-export const startServer = async () => {
+export async function startServer() {
+  const app = express();
+  const httpServer = http.createServer(app);
   const server = new ApolloServer({
     typeDefs,
     resolvers,
@@ -32,13 +39,19 @@ export const startServer = async () => {
       const user = await getUser(token);
       return { user };
     },
-    cors: {
-      origin: [process.env.DEV_CLIENT_URL, process.env.PROD_CLIENT_URL],
-      credentials: true,
-    },
+    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+    cache: "bounded",
   });
 
-  server.listen().then(({ url }) => {
-    console.log(`Server ready at ${url}`);
-  });
-};
+  await server.start();
+
+  app.use(
+    "/graphql",
+    cors({ origin: [process.env.DEV_CLIENT_URL, process.env.PROD_CLIENT_URL] }),
+    express.json(),
+    expressMiddleware(server)
+  );
+
+  await new Promise((resolve) => httpServer.listen({ port: 4000 }, resolve));
+  console.log(`🚀 Server ready at http://localhost:4000/graphql`);
+}
