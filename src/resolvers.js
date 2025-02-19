@@ -23,7 +23,11 @@ const resolvers = {
     register: async (_, { username, password }) => {
       const hashedPassword = await bcrypt.hash(password, 10);
       const user = await User.create({ username, password: hashedPassword });
-      return { id: user.id, username: user.username };
+      if (!user) throw new Error("User don't created");
+      const token = jwt.sign({ userId: user.id }, process.env.SECRET_KEY, {
+        expiresIn: "1d",
+      });
+      return { token, user };
     },
     login: async (_, { username, password }) => {
       const user = await User.findOne({ where: { username } });

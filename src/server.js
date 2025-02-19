@@ -12,7 +12,8 @@ import User from "./models/User.js";
 
 dotenv.config();
 
-const getUser = async (token) => {
+const getUserForRequest = async (req) => {
+  const token = req.headers.authorization || "";
   if (token) {
     try {
       const decoded = jwt.verify(
@@ -34,13 +35,9 @@ export async function startServer() {
   const server = new ApolloServer({
     typeDefs,
     resolvers,
-    context: async ({ req }) => {
-      const token = req.headers.authorization || "";
-      const user = await getUser(token);
-      return { user };
-    },
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
     cache: "bounded",
+    introspection: process.env.NODE_ENV !== "production",
   });
 
   await server.start();
@@ -48,20 +45,17 @@ export async function startServer() {
   app.use(
     "/graphql",
     cors({
+      origin: [process.env.DEV_CLIENT_URL, process.env.PROD_CLIENT_URL],
       credentials: true,
       methods: "*",
       allowedHeaders: ["Authorization", "Content-Type", "Accept", "Origin"],
-      origin: (origin, callback) => {
-        if (
-          [process.env.DEV_CLIENT_URL, process.env.PROD_CLIENT_URL].includes(
-            origin
-          )
-        ) {
-          callback(null, origin);
-        }
-      },
     }),
     express.json(),
+    expressMiddleware(server, {
+      context: async ({ req }) => ({
+        user: await getUserForRequest(req),
+      }),
+    }),
     expressMiddleware(server)
   );
 
